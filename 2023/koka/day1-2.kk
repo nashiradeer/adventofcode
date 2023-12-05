@@ -1,3 +1,4 @@
+import std/core/types
 import std/os/file
 import std/os/path
 
@@ -19,32 +20,35 @@ fun main()
     Ok(i) ->
       i.lines.map(get-numbers).map(fn (l)
         l.head.string ++ l.last.string
-      ).map(fn (log)
-        log.println
-        log
       ).filter-map(fn (s) parse-int(s)).sum().println
 
 fun get-numbers(s : string) : console list<string>
-  var numbers-found := []
-  var mounting := ""
+  var found := []
+  var word := ""
 
-  s.foreach(fn (c)
+  s.list.foreach-indexed(fn (i, c)
     if is-digit(c) then
-      numbers-found := numbers-found.append([c.string])
+      found := found ++ [c.string]
     else
-      val word = mounting ++ c.string
-      match numbers.find(fn ((n, _)) n == word)
-        Just((_, n)) ->
-          numbers-found := numbers-found.append([n.show])
-          mounting := ""
-        Nothing ->
-          match numbers.find(fn ((n, _)) n.starts-with(word).is-just)
-            Just (_) ->
-              mounting := word
-            Nothing ->
-              mounting := c.string
+      s.slice.advance(i).foreach-while(fn (c2)
+        val nw = word ++ c2.string
+
+        match numbers.find(fn ((n, _)) n == nw)
+          Just((_, n)) ->
+            found := found ++ [n.show]
+            return Just(())
+
+          Nothing ->
+            match numbers.find(fn ((n, _)) n.starts-with(nw).is-just)
+              Just (_) ->
+                word := nw
+              Nothing ->
+                return Just(())
+
+        Nothing
+      )
 
       ()
   )
 
-  numbers-found
+  found
